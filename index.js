@@ -1,22 +1,22 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
-let latestPostReceived = null;
-
+// Middleware to parse JSON bodies
 app.use(express.json());
 
-app.post('/track', (req, res) => {
-  latestPostReceived = {
-    time: new Date().toISOString(),
-    body: req.body,
-    headers: req.headers
-  };
-  console.log("🔥 TRACK POST:", JSON.stringify(req.body, null, 2));
-  res.status(200).send('Trackblock POST received!');
+// Store the latest POST payload
+let latestPostReceived = null;
+
+// POST endpoint to receive ESP32 payload
+app.post("/track", (req, res) => {
+  console.log("📦 POST received from device:", req.body);
+  latestPostReceived = req.body;
+  res.send("✅ Data received successfully");
 });
 
-app.get('/test-log', (req, res) => {
+// GET endpoint to view the latest POST data
+app.get("/test-log", (req, res) => {
   if (latestPostReceived) {
     res.json(latestPostReceived);
   } else {
@@ -24,6 +24,12 @@ app.get('/test-log', (req, res) => {
   }
 });
 
+// Optional default fallback
+app.get("/", (req, res) => {
+  res.send("✅ Trackblock server running.");
+});
+
+// Start server
 app.listen(port, () => {
-  console.log(`🚀 Trackblock backend running on port ${port}`);
+  console.log(`🚀 Trackblock backend listening on port ${port}`);
 });
